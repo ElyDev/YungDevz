@@ -1,6 +1,11 @@
 import { combineReducers } from 'redux';
 import update from 'immutability-helper';
 import actionTypes from '../actions/actionTypes';
+import { persistReducer } from 'redux-persist'
+import { AsyncStorage } from 'react-native'
+import hardSet from 'redux-persist/lib/stateReconciler/hardSet'
+import { firebaseReducer as firebase } from 'react-redux-firebase'
+
 
 export const INITIAL_STATE = {
   firstRunCompleted: false,
@@ -143,5 +148,9 @@ export const classReducer = (state = INITIAL_STATE, action) => {
 };
 
 export default combineReducers({
+  firebase: persistReducer(
+    { key: 'firebaseState', storage: AsyncStorage, stateReconciler: hardSet },
+    firebase
+  ),
   data: classReducer,
 });
