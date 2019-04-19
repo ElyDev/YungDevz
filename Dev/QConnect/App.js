@@ -23,10 +23,10 @@ firebase.initializeApp(ApiKeys.firebaseConfig);
 export const store = createStore(
   persistedReducer,
   //This is to allow react native redux debugger to show redux content
-  //window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
-  compose(
-    reactReduxFirebase(firebase, ApiKeys.reduxFirebaseConfigß)
-  )
+  window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__(),
+  // compose(
+  //   reactReduxFirebase(firebase, ApiKeys.reduxFirebaseConfig)
+  // )
 );
 
 export const persistor = persistStore(store);

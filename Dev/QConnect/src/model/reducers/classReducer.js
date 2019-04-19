@@ -5,7 +5,7 @@ import { persistReducer } from 'redux-persist'
 import { AsyncStorage } from 'react-native'
 import hardSet from 'redux-persist/lib/stateReconciler/hardSet'
 import { firebaseReducer as firebase } from 'react-redux-firebase'
-
+import * as firebase2 from 'firebase'
 
 export const INITIAL_STATE = {
   firstRunCompleted: false,
@@ -22,6 +22,12 @@ export const INITIAL_STATE = {
 
 };
 
+saveToFirebase = (newState) => {
+  var database = firebase2.database();
+  database.ref('teachers/').set(newState);
+  return newState;
+}
+
 export const classReducer = (state = INITIAL_STATE, action) => {
   // pulls list of current student in current state
   const {
@@ -35,18 +41,18 @@ export const classReducer = (state = INITIAL_STATE, action) => {
       {
         let classIndex = action.studentInfo.classIndex
         newState = update(baseState, { teachers: { [0]: { classes: { [classIndex]: { students: { $push: [action.studentInfo.studentInfo] } } } } } });
-        return newState;
+        return saveToFirebase(newState);
       }
     case actionTypes.DELETE_STUDENT:
       {
         newState = update(baseState, { teachers: { [0]: { classes: { [action.classIndex]: { students: { $splice: [[action.studentIndex, 1]] } } } } } });
-        return newState;
+        return saveToFirebase(newState);
       }
     case actionTypes.ADD_CLASS:
       {
         newState = update(baseState, { teachers: { [0]: { classes: { $push: [action.classInfo] } } } });
         newState = update(newState, { teachers: { [0]: { currentClassIndex: { $set: newState.teachers[0].classes.length - 1 } } } });
-        return newState
+        return saveToFirebase(newState);
       }
     case actionTypes.ADD_ATTENDANCE:
       {
@@ -76,13 +82,13 @@ export const classReducer = (state = INITIAL_STATE, action) => {
         }
 
         newState = update(baseState, { teachers: { [0]: { classes: { [action.classIndex]: { students: { $set: studentslist } } } } } });
-        return newState;
+        return saveToFirebase(newState);
       }
     case actionTypes.SAVE_TEACHER_INFO:
       {
         //fetches current teacher info
         newState = update(baseState, { teachers: { [action.teacherIndex]:  { $merge: {...action.teacherInfo} } } } );
-        return newState;
+        return saveToFirebase(newState);
       }
     case actionTypes.EDIT_CURRENT_ASSIGNMENT:
       {
@@ -93,13 +99,13 @@ export const classReducer = (state = INITIAL_STATE, action) => {
         }
 
         let newState = update(baseState, { teachers: { [0]: { classes: { [classIndex]: { students: { [studentIndex]: { currentAssignment: { $set: updatedAssignment } } } } } } } });
-        return newState;
+        return saveToFirebase(newState);
       }
     case actionTypes.UPDATE_STUDENT_IMAGE:
       {
         let { classIndex, studentIndex, imageId } = action;
         let newState = update(baseState, { teachers: { [0]: { classes: { [classIndex]: { students: { [studentIndex]: { imageId: { $set: imageId } } } } } } } });
-        return newState;
+        return saveToFirebase(newState);
       }
     case actionTypes.ADD_NEW_ASSIGNMENT:
       {
@@ -114,7 +120,7 @@ export const classReducer = (state = INITIAL_STATE, action) => {
 
         //updates the current assignment
         let newState = update(baseState, { teachers: { [0]: { classes: { [classIndex]: { students: { [studentIndex]: { currentAssignment: { $set: newCurrentAssignment } } } } } } } });
-        return newState;
+        return saveToFirebase(newState);
       }
     case actionTypes.COMPLETE_CURRENT_ASSIGNMENT:
       {
@@ -134,13 +140,13 @@ export const classReducer = (state = INITIAL_STATE, action) => {
         let totalGrade = baseState.teachers[0].classes[classIndex].students[studentIndex].totalGrade;
         newState = update(newState, { teachers: { [0]: { classes: { [classIndex]: { students: { [studentIndex]: { totalAssignments: { $set: (totalAssignments + 1) } } } } } } } });
         newState = update(newState, { teachers: { [0]: { classes: { [classIndex]: { students: { [studentIndex]: { totalGrade: { $set: (totalGrade + assignment.evaluation.overallGrade) } } } } } } } });
-        return newState;
+        return saveToFirebase(newState);
       }
     case actionTypes.SET_FIRST_RUN_COMPLETED:
     {
       let { completed } = action;
       let newState = update(baseState, { firstRunCompleted: { $set: completed } });
-      return newState;
+      return saveToFirebase(newState);
     }
     default:
       return state
